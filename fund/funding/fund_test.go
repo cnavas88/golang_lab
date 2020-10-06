@@ -12,8 +12,7 @@ func BenchmarkWithdrawals(b *testing.B) {
 		return
 	}
 
-	// Add as many dollars as we have iterations this run
-	fund := NewFund(b.N)
+	server := NewFundServer(b.N)
 
 	dollarsPerFounder := b.N / WORKERS
 
@@ -30,7 +29,7 @@ func BenchmarkWithdrawals(b *testing.B) {
 			defer wg.Done()
 
 			for i := 0; i < dollarsPerFounder; i++ {
-				fund.Withdraw(1)
+				server.Commands <- WithdrawCommand{Amount: 1}
 			}
 		}() // Remember to call the closure!
 	}
@@ -38,20 +37,11 @@ func BenchmarkWithdrawals(b *testing.B) {
 	// Wait for all the workers to finish
 	wg.Wait()
 
-	if fund.Balance() != 0 {
-		b.Error("Balance wasn't zero:", fund.Balance())
-	}
-}
+	balanceReponseChan := make(chan int)
+	server.Commands <- BalanceCommand{Response: balanceReponseChan}
+	balance := <-balanceReponseChan
 
-func BenchmarkFund(b *testing.B) {
-	// Add as many dollars as we have iterations this run
-	fund := NewFund(b.N)
-
-	for i := 0; i < b.N; i++ {
-		fund.Withdraw(1)
-	}
-
-	if fund.Balance() != 0 {
-		b.Error("Balance wasn't zero:", fund.Balance())
+	if balance != 0 {
+		b.Error("Balance wasn't zero:", balance)
 	}
 }
