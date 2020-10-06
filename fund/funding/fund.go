@@ -7,8 +7,8 @@ type Fund struct {
 }
 
 // NewFund A regular function returning pointer to a fund
-func NewFund(initialBalance int) *Fund {
-	return &Fund{
+func NewFund(initialBalance int) Fund {
+	return Fund{
 		balance: initialBalance,
 	}
 }
