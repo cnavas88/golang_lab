@@ -1,26 +1,14 @@
 package main
 
-import (
-	"fmt"
-	"net/http"
-
-	"github.com/gorilla/mux"
-)
-
 func main() {
-	r := mux.NewRouter()
+	a := App{}
 
-	bookRouter := r.PathPrefix("/books").Subrouter()
+	// Inicialize with the environment variables
+	a.Initialize(
+		os.Getenv("APP_DB_USERNAME"),
+		os.Getenv("APP_DB_PASSWORD"),
+		os.Getenv("APP_DB_NAME")
+	)
 
-	bookRouter.HandleFunc("/{title}/page/{page}", printResponse)
-
-	http.ListenAndServe(":8080", r)
-}
-
-func printResponse(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	title := vars["title"]
-	page := vars["page"]
-
-	fmt.Fprintf(w, "You have request the book: %s on page %s\n", title, page)
+	a.Run(":8010")
 }
