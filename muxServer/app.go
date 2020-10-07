@@ -17,16 +17,28 @@ type App struct {
 	DB     *sql.DB
 }
 
+const (
+	host     = "localhost"
+	port     = "5432"
+	user     = "postgres"
+	password = "postgres"
+	dbname   = "postgres"
+)
+
 // Initialize have the details required to connect to the database
-func (a *App) Initialize(p map[string]string) {
-	connectionString :=
-		fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-			p["host"],
-			p["port"],
-			p["user"],
-			p["password"],
-			p["dbname"],
-		)
+func (a *App) Initialize() {
+	// connectionString :=
+	// 	fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+	// 		p["host"],
+	// 		p["port"],
+	// 		p["user"],
+	// 		p["password"],
+	// 		p["dbname"],
+	// 	)
+
+	connectionString := fmt.Sprintf("host=%s port=%s user=%s "+
+		"password=%s dbname=%s sslmode=disable",
+		host, port, user, password, dbname)
 
 	var err error
 	a.DB, err = sql.Open("postgres", connectionString)
