@@ -18,9 +18,15 @@ type App struct {
 }
 
 // Initialize have the details required to connect to the database
-func (a *App) Initialize(user, password, dbname string) {
+func (a *App) Initialize(p map[string]string) {
 	connectionString :=
-		fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", user, password, dbname)
+		fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+			p["host"],
+			p["port"],
+			p["user"],
+			p["password"],
+			p["dbname"],
+		)
 
 	var err error
 	a.DB, err = sql.Open("postgres", connectionString)

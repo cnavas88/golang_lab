@@ -8,21 +8,24 @@ import (
 
 const tableCreationQuery = `CREATE TABLE IF NOT EXISTS products
 (
-	id SERIAL,
-	name TEXT NOT NULL,
-	price NUMERIC(10,2) NOT NULL DEFAULT 0.00,
-	CONSTRAINT products_pkey PRIMERY KEY (id)
-)
-`
+    id SERIAL,
+    name TEXT NOT NULL,
+    price NUMERIC(10,2) NOT NULL DEFAULT 0.00,
+    CONSTRAINT products_pkey PRIMARY KEY (id)
+)`
 
-var a = App{}
+var a App
 
 func TestMain(m *testing.M) {
-	a.Initialize(
-		os.Getenv("APP_DB_USERNAME"),
-		os.Getenv("APP_DB_PASSWORD"),
-		os.Getenv("APP_DB_NAME"),
-	)
+	psqlInfo := map[string]string{
+		"host":     DefaultEnv("APP_DB_HOST", "localhost"),
+		"port":     DefaultEnv("APP_DB_PORT", "5432"),
+		"username": DefaultEnv("APP_DB_USERNAME", "postgres"),
+		"password": DefaultEnv("APP_DB_PASSWORD", ""),
+		"dbname":   DefaultEnv("APP_DB_NAME", "postgres"),
+	}
+
+	a.Initialize(psqlInfo)
 
 	ensureTableExists()
 
