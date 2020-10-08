@@ -18,11 +18,15 @@ var a App
 
 func TestMain(m *testing.M) {
 
-	a.Initialize(
-		DefaultEnv("APP_DB_USERNAME", "postgres"),
-		DefaultEnv("APP_DB_PASSWORD", "postgres"),
-		DefaultEnv("APP_DB_NAME", "postgres"),
-	)
+	psqlInfo := map[string]string{
+		"host":     DefaultEnv("APP_DB_HOST", "localhost"),
+		"username": DefaultEnv("APP_DB_USERNAME", "postgres"),
+		"password": DefaultEnv("APP_DB_PASSWORD", "postgres"),
+		"dbname":   DefaultEnv("APP_DB_NAME", "postgres"),
+		"port":     DefaultEnv("APP_DB_PORT", "5432"),
+	}
+
+	a.Initialize(psqlInfo)
 
 	ensureTableExists()
 
