@@ -1,7 +1,10 @@
 package main
 
 import (
+	"encoding/json"
 	"log"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"testing"
 )
@@ -49,28 +52,43 @@ func clearTable() {
 	a.DB.Exec("ALTER SEQUENCE products_id_seq RESTART WITH 1")
 }
 
-// func TestEmptyTable(t *testing.T) {
-// 	clearTable()
+func TestEmptyTable(t *testing.T) {
+	clearTable()
 
-// 	req, _ := http.NewRequest("GET", "/products", nil)
-// 	response := executeRequest(req)
+	req, _ := http.NewRequest("GET", "/products", nil)
+	response := executeRequest(req)
 
-// 	checkResponseCode(t, http.StatusOK, response.Code)
+	checkResponseCode(t, http.StatusOK, response.Code)
 
-// 	if body := response.Body.String(); body != "[]" {
-// 		t.Errorf("Expected an empty array. Got %s", body)
-// 	}
-// }
+	if body := response.Body.String(); body != "[]" {
+		t.Errorf("Expected an empty array. Got %s", body)
+	}
+}
 
-// func executeRequest(req *http.Request) *httptest.ResponseRecorder {
-// 	rr := httptest.NewRecorder()
-// 	a.Router.ServeHTTP(rr, req)
+func executeRequest(req *http.Request) *httptest.ResponseRecorder {
+	rr := httptest.NewRecorder()
+	a.Router.ServeHTTP(rr, req)
 
-// 	return rr
-// }
+	return rr
+}
 
-// func checkResponseCode(t *testing.T, expected int, actual int) {
-// 	if expected != actual {
-// 		t.Errorf("Expected response code %d. Got %d\n", expeceted, actual)
-// 	}
-// }
+func checkResponseCode(t *testing.T, expected int, actual int) {
+	if expected != actual {
+		t.Errorf("Expected response code %d. Got %d\n", expeceted, actual)
+	}
+}
+
+func TestGetNonExistentProduct(t *testing.T) {
+	clearTable()
+
+	req, _ := http.NewRequest("GET", "/product/11", nil)
+	response := executeRequest(req)
+
+	checkResponseCode(t, http.StatusNotFound, response.Code)
+
+	var m map[string]string
+	json.Unmarshal(response.Body.Bytes(), &m)
+	if m["error"] != "Product not found" {
+		t.Errorf("Expected the 'error' key of the response to be set to 'Product not found'. Got '%s'", m["error"])
+	}
+}
