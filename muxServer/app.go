@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
@@ -46,3 +48,27 @@ func (a *App) Initialize(p map[string]string) {
 
 // Run method will simply start the app.
 func (a *App) Run(addr string) {}
+
+// Route Handlers
+func (a *App) getProduct(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	// Atoi is equivalent to ParseInt
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, "Invalid product ID")
+		return
+	}
+
+	p := product{ID: id}
+	if err := p.getProduct(a.DB); err != nil {
+		switch err {
+		case sql.ErrNoRows:
+			respondWithJSON(w, http.StatusNotFound, "Product Not found")
+		default:
+			respondWithJSON(w, http.StatusInternalServerError, err.Error())
+		}
+	}
+
+	respondWithJSON(w, http.StatusOK, p)
+}
