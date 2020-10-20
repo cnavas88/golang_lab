@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strconv"
 
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
@@ -59,54 +58,4 @@ func (a *App) initializeRoutes() {
 	a.Router.HandleFunc("/product/{id:[0-9]+}", a.getProduct).Methods("GET")
 	a.Router.HandleFunc("/product/{id:[0-9]+}", a.updateProduct).Methods("PUT")
 	a.Router.HandleFunc("/product/{id:[0-9]+}", a.deleteProduct).Methods("DELETE")
-}
-
-// Route Handlers
-func (a *App) getProduct(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-
-	// Atoi is equivalent to ParseInt
-	id, err := strconv.Atoi(vars["id"])
-	if err != nil {
-		respondWithError(w, http.StatusBadRequest, "Invalid product ID")
-		return
-	}
-
-	p := product{ID: id}
-	if err := p.getProduct(a.DB); err != nil {
-		switch err {
-		case sql.ErrNoRows:
-			respondWithJSON(w, http.StatusNotFound, "Product Not found")
-		default:
-			respondWithJSON(w, http.StatusInternalServerError, err.Error())
-		}
-	}
-
-	respondWithJSON(w, http.StatusOK, p)
-}
-
-func (a *App) getProducts(w http.ResponseWriter, r *http.Request) {
-	count, _ := strconv.Atoi(r.FormValue("count"))
-	start, _ := strconv.Atoi(r.FormValue("start"))
-
-	count, start = controlValues(count, start)
-
-	products, err := getProducts(a.DB, start, count)
-	if err != nil {
-		respondWithJSON(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-
-	respondWithJSON(w, http.StatusOK, products)
-}
-
-func controlValues(count, start int) (int, int) {
-	if count > 10 || count < 1 {
-		count = 10
-	}
-	if start < 0 {
-		start = 0
-	}
-
-	return count, start
 }
