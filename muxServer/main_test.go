@@ -1,11 +1,13 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strconv"
 	"testing"
 )
 
@@ -24,7 +26,7 @@ func TestMain(m *testing.M) {
 	psqlInfo := map[string]string{
 		"host":     DefaultEnv("APP_DB_HOST", "localhost"),
 		"username": DefaultEnv("APP_DB_USERNAME", "postgres"),
-		"password": DefaultEnv("APP_DB_PASSWORD", "postgres"),
+		"password": DefaultEnv("APP_DB_PASSWORD", ""),
 		"dbname":   DefaultEnv("APP_DB_NAME", "postgres"),
 		"port":     DefaultEnv("APP_DB_PORT", "5432"),
 	}
@@ -74,7 +76,7 @@ func executeRequest(req *http.Request) *httptest.ResponseRecorder {
 
 func checkResponseCode(t *testing.T, expected int, actual int) {
 	if expected != actual {
-		t.Errorf("Expected response code %d. Got %d\n", expeceted, actual)
+		t.Errorf("Expected response code %d. Got %d\n", expected, actual)
 	}
 }
 
@@ -90,5 +92,54 @@ func TestGetNonExistentProduct(t *testing.T) {
 	json.Unmarshal(response.Body.Bytes(), &m)
 	if m["error"] != "Product not found" {
 		t.Errorf("Expected the 'error' key of the response to be set to 'Product not found'. Got '%s'", m["error"])
+	}
+}
+
+func TestCreateProduct(t *testing.T) {
+	clearTable()
+
+	var jsonStr = []byte(`{"name": "test product", "price": 11.22}`)
+
+	req, _ := http.NewRequest("POST", "/product", bytes.NewBuffer(jsonStr))
+	req.Header.Set("Content-type", "application/json")
+
+	response := executeRequest(req)
+	checkResponseCode(t, http.StatusCreated, response.Code)
+
+	var m map[string]interface{}
+	json.Unmarshal(response.Body.Bytes(), &m)
+
+	if m["name"] != "test product" {
+		t.Errorf("Expected product name to be 'test product'. Got '%v'", m["name"])
+	}
+
+	if m["price"] != 11.22 {
+		t.Errorf("Expected product price to be '11.22'. Got '%v'", m["price"])
+	}
+
+	// the id is compared to 1.0 because JSON unmarshal converts
+	// numbers to floats, when the target is a map[string]interface{}
+	if m["id"] != 1.0 {
+		t.Errorf("Expected product ID to be '1'. Got '%v'", m["id"])
+	}
+}
+
+func TestGetProduct(t *testing.T) {
+	clearTable()
+	addProducts(1)
+
+	req, _ := http.NewRequest("GET", "/product/1", nil)
+	response := executeRequest(req)
+
+	checkResponseCode(t, http.StatusOK, response.Code)
+}
+
+func addProducts(count int) {
+	if count < 1 {
+		count = 1
+	}
+
+	for i := 0; i < count; i++ {
+		a.DB.Exec("INSERT INTO products(name, price) VALUES($1, $2)", "Product "+strconv.Itoa(i), (i+1.0)*10)
 	}
 }

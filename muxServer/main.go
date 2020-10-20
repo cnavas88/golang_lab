@@ -15,7 +15,7 @@ func main() {
 	psqlInfo := map[string]string{
 		"host":     DefaultEnv("APP_DB_HOST", "localhost"),
 		"username": DefaultEnv("APP_DB_USERNAME", "postgres"),
-		"password": DefaultEnv("APP_DB_PASSWORD", "postgres"),
+		"password": DefaultEnv("APP_DB_PASSWORD", ""),
 		"dbname":   DefaultEnv("APP_DB_NAME", "postgres"),
 		"port":     DefaultEnv("APP_DB_PORT", "5432"),
 	}
