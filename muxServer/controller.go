@@ -12,8 +12,6 @@ import (
 // Route Handlers
 func (a *App) getProduct(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-
-	// Atoi is equivalent to ParseInt
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, "Invalid product ID")
@@ -24,10 +22,11 @@ func (a *App) getProduct(w http.ResponseWriter, r *http.Request) {
 	if err := p.getProduct(a.DB); err != nil {
 		switch err {
 		case sql.ErrNoRows:
-			respondWithJSON(w, http.StatusNotFound, "Product not found")
+			respondWithError(w, http.StatusNotFound, "Product not found")
 		default:
-			respondWithJSON(w, http.StatusInternalServerError, err.Error())
+			respondWithError(w, http.StatusInternalServerError, err.Error())
 		}
+		return
 	}
 
 	respondWithJSON(w, http.StatusOK, p)
