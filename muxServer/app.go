@@ -44,10 +44,22 @@ func (a *App) Initialize(p map[string]string) {
 
 	// Only initialize when we've connected to database
 	a.Router = mux.NewRouter()
+
+	a.initializeRoutes()
 }
 
 // Run method will simply start the app.
-func (a *App) Run(addr string) {}
+func (a *App) Run(addr string) {
+	log.Fatal(http.ListenAndServe(":8080", a.Router))
+}
+
+func (a *App) initializeRoutes() {
+	a.Router.HandleFunc("/products", a.getProducts).Methods("GET")
+	a.Router.HandleFunc("/product", a.createProduct).Methods("POST")
+	a.Router.HandleFunc("/product/{id:[0-9]+}", a.getProduct).Methods("GET")
+	a.Router.HandleFunc("/product/{id:[0-9]+}", a.updateProduct).Methods("PUT")
+	a.Router.HandleFunc("/product/{id:[0-9]+}", a.deleteProduct).Methods("DELETE")
+}
 
 // Route Handlers
 func (a *App) getProduct(w http.ResponseWriter, r *http.Request) {
