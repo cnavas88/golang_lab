@@ -7,24 +7,20 @@ import (
 	"time"
 )
 
-// Middleware generating unique type for middlewares
 type Middleware func(http.HandlerFunc) http.HandlerFunc
 
-// Logging logs all request with its path and the time
-// it took to process
-func logging() Middleware {
+// Logging logs all requests with its path and the time it took to process
+func Logging() Middleware {
 
 	// Create a new Middleware
 	return func(f http.HandlerFunc) http.HandlerFunc {
 
-		// Define the http.handlerFunc
+		// Define the http.HandlerFunc
 		return func(w http.ResponseWriter, r *http.Request) {
 
-			// Do Middleware things
+			// Do middleware things
 			start := time.Now()
-			defer func() {
-				log.Println(r.URL.Path, time.Since(start))
-			}()
+			defer func() { log.Println(r.URL.Path, time.Since(start)) }()
 
 			// Call the next middleware/handler in chain
 			f(w, r)
@@ -61,7 +57,6 @@ func Chain(f http.HandlerFunc, middlewares ...Middleware) http.HandlerFunc {
 	return f
 }
 
-// Hello function to show the string "hello world" in the browser
 func Hello(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "hello world")
 }
