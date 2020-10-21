@@ -1,10 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"text/template"
 )
 
+// ContactDetails store the basic details to send an email
 type ContactDetails struct {
 	Email   string
 	Subject string
@@ -27,6 +29,7 @@ func main() {
 		}
 
 		// do something with details
+		fmt.Println(details)
 
 		_ = details
 
